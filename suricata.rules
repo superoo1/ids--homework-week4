@@ -1,0 +1,16 @@
+alert http any any -> any any (msg:"Scanner-like Host header position"; flow:established,to_server; http.method; content:"Host:"; nocase; http_header; byte_test:4,>,100,0,relative,string; content:"User-Agent:"; distance:0; within:50; pcre:"/User-Agent:.*(sqlmap|nikto|w3af|nessus)/i"; sid:16; rev:1;)
+
+#alert http any any -> any any (msg:"High parameter variation - possible sqlmap"; flow:established,to_server; threshold:type threshold, track by_src, count 20, seconds 60; sid:15; rev:1;)
+
+
+alert http any any -> any any (msg:"dirsearch scan detected - User-Agent"; flow:established,to_server; http.user_agent; content:"dirsearch"; nocase; sid:30; rev:1;)
+
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"dirsearch Scan"; flow:established,to_server; http.uri; content:"/admin/"; nocase; fast_pattern; content:"/wp-admin/"; nocase; distance:0; content:"/backup/"; nocase; distance:0; content:"/config/"; nocase; distance:0; classtype:web-application-attack; sid:31; rev:1;)
+#alert http any  any -> any any (msg:"WEB_APPLICATION Excessive 404 Responses - Possible Directory Scan"; flow:established,to_client; http.stat_code; content:"404";threshold:type threshold,track by_src,count 20,seconds 10; classtype:web-application-scan; sid:1000001; rev:1;)
+
+#alert http $any any -> $any any ( msg:"Scan Hidden Path Access";flow:established,to_server;http.uri;content:"git";sid:50;rev:1;)
+
+alert http any any -> any any (msg:"maybe dirsearch"; flow:established,to_server; http.uri; pcre:"/\..*/Ui";threshold:type threshold,track by_src,count 20,seconds 10;classtype:bad-unknown; sid:3; rev:1;)
+
+alert udp any any -> any any ( msg: "UDP DDoS Attack";dsize:0;threshold: type both, track by_dst, count 100, seconds 1;sid:42;rev:1;)
+
